@@ -20,7 +20,8 @@
     "express": "~4.16.1",
     "firebase-admin": "^9.4.2",
     "morgan": "~1.9.1",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "rabbit.js": "^0.4.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.10",

@@ -1,5 +1,19 @@
 version: "3.3"
 services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    volumes:
+      - ./rabbitMq/etc/:/etc/rabbitmq/
+      - ./rabbitMq/data/:/var/lib/rabbitmq/
+      - ./rabbitMq/logs/:/var/log/rabbitmq/
+    environment:
+      RABBITMQ_ERLANG_COOKIE: leo_cookie
+      RABBITMQ_DEFAULT_USER: leo
+      RABBITMQ_DEFAULT_PASS: leo_password
+    ports:
+      - 5672:5672
+      - 15672:15672
   db:
     image: mysql:5.7
     restart: always
@@ -21,3 +35,4 @@ services:
     volumes:
       - ./database/data:/var/lib/mysql
       - ./database/init/:/docker-entrypoint-initdb.d/
+      
