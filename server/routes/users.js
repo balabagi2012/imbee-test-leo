@@ -1,10 +1,15 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
-import firebaseAdmin from "../firebaseAdmin"
+import firebaseAdmin from "../firebaseAdmin";
+import Model from "../model";
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  console.log(firebaseAdmin)
-  res.send('respond with a resource');
+router.get("/", async function (req, res, next) {
+  try {
+    const result = await Model.getJobs();
+    res.json(result);
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 module.exports = router;
