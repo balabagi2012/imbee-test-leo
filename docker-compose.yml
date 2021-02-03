@@ -8,9 +8,9 @@ services:
       - ./rabbitMq/data/:/var/lib/rabbitmq/
       - ./rabbitMq/logs/:/var/log/rabbitmq/
     environment:
-      RABBITMQ_ERLANG_COOKIE: leo_cookie
-      RABBITMQ_DEFAULT_USER: leo
-      RABBITMQ_DEFAULT_PASS: leo_password
+      RABBITMQ_ERLANG_COOKIE: ${COOKIE}
+      RABBITMQ_DEFAULT_USER: ${USER}
+      RABBITMQ_DEFAULT_PASS: ${USER_PASSWORD}
     networks:
       - app-network
 
@@ -19,22 +19,23 @@ services:
     container_name: mysql
     restart: always
     environment:
-      MYSQL_DATABASE: "imbee_test"
+      MYSQL_DATABASE: ${DATABASE_NAME}
       # So you don't have to use root, but you can if you like
-      MYSQL_USER: "leo"
+      MYSQL_USER: ${USER}
       # You can use whatever password you like
-      MYSQL_PASSWORD: "leo_password"
+      MYSQL_PASSWORD: ${USER_PASSWORD}
       # Password for root access
-      MYSQL_ROOT_PASSWORD: "imbee-test-leo"
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
     volumes:
       - ./database/data:/var/lib/mysql
       - ./database/init/:/docker-entrypoint-initdb.d/
     networks:
       - app-network
-    
+    depends_on:
+      - rabbitmq
 
   website:
-    image: node:12-alpine    
+    image: node:12-alpine
     container_name: website
     command: sh -c "yarn install && yarn serve"
     ports:
@@ -47,18 +48,25 @@ services:
       - mysql
     networks:
       - app-network
-    
+
   server:
     image: node:12-alpine
     container_name: server
-    command: sh -c "yarn install && yarn start"
     working_dir: /server
+    command:
+      [
+        "./wait-for",
+        "rabbitmq:5672",
+        "--",
+        "sh",
+        "-c",
+        "yarn install && yarn start",
+      ]
     volumes:
       - ./server:/server
     depends_on:
       - rabbitmq
       - mysql
-      - website
     ports:
       - "3000:3000"
     networks:
@@ -67,5 +75,3 @@ services:
 networks:
   app-network:
     driver: bridge
-  
-      
