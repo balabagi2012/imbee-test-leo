@@ -1,7 +1,9 @@
 var express = require("express");
 var router = express.Router();
-import firebaseAdmin from "../firebaseAdmin";
+import nanoid from "nanoid";
 import Model from "../model";
+import RabbitMQ from "../rabbitMQ";
+
 /* GET users listing. */
 router.get("/", async function (req, res, next) {
   try {
@@ -13,9 +15,25 @@ router.get("/", async function (req, res, next) {
 });
 
 router.post("/", async function (req, res, next) {
-  const { identifier, deliverAt } = req.body;
+  const { text, deviceId } = req.body;
   try {
-    const result = await Model.createJob(identifier, deliverAt);
+    RabbitMQ.pubFCM.write(
+      JSON.stringify({
+        identifier: `fcm-msg-${nanoid.nanoid()}`,
+        deviceId,
+        text,
+      }),
+      "utf8"
+    );
+    res.json(true);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+router.delete("/", async function (req, res, next) {
+  try {
+    const result = await Model.removeJobs();
     res.json(result);
   } catch (error) {
     res.json(error);

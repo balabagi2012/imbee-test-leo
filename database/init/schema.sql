@@ -4,7 +4,7 @@ GRANT ALL PRIVILEGES ON imbee_test.* TO 'leo' @'localhost' IDENTIFIED BY 'leo_pa
 
 CREATE TABLE fcm_job (
   identifier varchar(40),
-  deliverAt date,
+  deliverAt TIMESTAMP,
   PRIMARY KEY(`identifier`)
 ) DEFAULT CHARSET = utf8;
 

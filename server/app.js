@@ -5,14 +5,25 @@ import logger from "morgan";
 import path from "path";
 import RabbitMQ from "./rabbitMQ";
 import { devicesRouter, jobsRouter } from "./routes";
+import firebaseAdmin from "./firebaseAdmin";
+import Model from "./model";
 
+const defaultMessaging = firebaseAdmin.messaging();
 RabbitMQ.initSockets();
-RabbitMQ.subFCM.on("data", function (note) {
-  console.log("Alarum! %s", JSON.parse(note));
+RabbitMQ.subFCM.on("data", async function (note) {
+  const { identifier, deviceId, text } = JSON.parse(note);
+  try {
+    await defaultMessaging.send({
+      notification: { title: "Incoming message", body: text },
+      token: deviceId,
+    });
+    const job = { identifier, deliverAt: new Date() };
+    await Model.createJob(job.identifier, job.deliverAt);
+    RabbitMQ.pubDone.write(JSON.stringify(job), "utf8");
+  } catch (error) {
+    console.log(error);
+  }
 });
-setTimeout(() => {
-  RabbitMQ.pubFCM.write(JSON.stringify({ a: 1 }), "utf8");
-}, 1000);
 
 const app = express();
 app.use(cors());
