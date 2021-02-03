@@ -2,7 +2,7 @@ import mysql from "mysql";
 
 class Model {
   static connection = mysql.createConnection({
-    host: "localhost",
+    host: "mysql",
     user: "leo",
     password: "leo_password",
     port: "3306",

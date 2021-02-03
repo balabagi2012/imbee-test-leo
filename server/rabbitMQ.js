@@ -9,7 +9,7 @@ class RabbitMQ {
 
   static async initSockets() {
     if (this.context === null) {
-      this.context = rabbit.createContext("amqp://leo:leo_password@localhost:5672");
+      this.context = rabbit.createContext("amqp://leo:leo_password@rabbitmq");
       this.pubFCM = this.context.socket("PUBLISH");
       this.subFCM = this.context.socket("SUBSCRIBE");
       this.pubFCM.connect("notification.fcm");

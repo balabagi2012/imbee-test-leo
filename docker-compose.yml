@@ -11,11 +11,12 @@ services:
       RABBITMQ_ERLANG_COOKIE: leo_cookie
       RABBITMQ_DEFAULT_USER: leo
       RABBITMQ_DEFAULT_PASS: leo_password
-    ports:
-      - 5672:5672
-      - 15672:15672
-  db:
+    networks:
+      - app-network
+
+  mysql:
     image: mysql:5.7
+    container_name: mysql
     restart: always
     environment:
       MYSQL_DATABASE: "imbee_test"
@@ -25,14 +26,46 @@ services:
       MYSQL_PASSWORD: "leo_password"
       # Password for root access
       MYSQL_ROOT_PASSWORD: "imbee-test-leo"
-    ports:
-      # <Port exposed> : < MySQL Port running inside container>
-      - "3306:3306"
-    expose:
-      # Opens port 3306 on the container
-      - "3306"
-      # Where our data will be persisted
     volumes:
       - ./database/data:/var/lib/mysql
       - ./database/init/:/docker-entrypoint-initdb.d/
+    networks:
+      - app-network
+    
+
+  website:
+    image: node:12-alpine    
+    container_name: website
+    command: sh -c "yarn install && yarn serve"
+    ports:
+      - "8080:8080"
+    working_dir: /website
+    volumes:
+      - ./website:/website
+    depends_on:
+      - rabbitmq
+      - mysql
+    networks:
+      - app-network
+    
+  server:
+    image: node:12-alpine
+    container_name: server
+    command: sh -c "yarn install && yarn start"
+    working_dir: /server
+    volumes:
+      - ./server:/server
+    depends_on:
+      - rabbitmq
+      - mysql
+      - website
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+  
       
