@@ -6,11 +6,11 @@ class Model {
     user: "leo",
     password: "leo_password",
     port: "3306",
-    database: "fcm_job",
+    database: "imbee_test",
   });
 
-  constructor(){
-    this.connection.connect()
+  constructor() {
+    this.connection.connect();
   }
 
   static async getJobs() {
@@ -22,7 +22,6 @@ class Model {
         }
         resolve(result);
       });
-
     });
   }
 
@@ -39,6 +38,35 @@ class Model {
           resolve(result);
         }
       );
+    });
+  }
+
+  static async setDevice(identifier, token) {
+    return new Promise((resolve, reject) => {
+      const sql = `INSERT INTO fcm_device (identifier, token) VALUES(?,?) ON DUPLICATE KEY UPDATE identifier='${identifier}', token='${token}'`;
+      this.connection.query(
+        sql,
+        [identifier, deliverAt],
+        function (err, result) {
+          console.log(err);
+          if (err) {
+            reject(err);
+          }
+          resolve(result);
+        }
+      );
+    });
+  }
+
+  static async getDevices() {
+    return new Promise((resolve, reject) => {
+      const sql = "SELECT * FROM fcm_device";
+      this.connection.query(sql, (err, result) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(result);
+      });
     });
   }
 }

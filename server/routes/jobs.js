@@ -12,4 +12,14 @@ router.get("/", async function (req, res, next) {
   }
 });
 
-module.exports = router;
+router.post("/", async function (req, res, next) {
+  const { identifier, deliverAt } = req.body;
+  try {
+    const result = await Model.createJob(identifier, deliverAt);
+    res.json(result);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+export default router;

@@ -1,19 +1,29 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <h1>devices</h1>
+    <div>
+      <ul>
+        <li v-for="device in devices" :key="device.identifier">
+          identifier:{{ device.identifier }} token:{{ device.token }}
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
 import firebase from "@/firebase";
 export default {
   name: "App",
-  components: {
-    HelloWorld,
+  components: {},
+  data() {
+    return {
+      devices: [],
+      jobs: [],
+    };
   },
   mounted() {
+    this.fetchDevices();
     const messaging = firebase.messaging();
     messaging
       .requestPermission()
@@ -27,21 +37,48 @@ export default {
           console.log(err);
         }
       )
-      .then((token) => {
+      .then(async (token) => {
         // 成功取得 token
-        console.log(token);
+        await this.setDevice(token);
+        await this.fetchDevices();
       });
+  },
+  methods: {
+    async fetchDevices() {
+      const response = await fetch(`http://localhost:3000/devices`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+      this.devices = await response.json();
+    },
+    async setDevice(token) {
+      await fetch(`http://localhost:3000/devices/web`, {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: token,
+        }),
+      });
+    },
+    async fetchJobs() {
+      const response = await fetch(`http://localhost:3000/jobs`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+      this.jobs = await response.json();
+    },
   },
 };
 </script>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>
